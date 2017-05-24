@@ -8,57 +8,67 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.pmw.tinylog.Logger;
+
 public class Runner
 {
-    public static void main(String[] args)
+    private Runner()
+    {
+    }
+
+    public static void main(String[] args) throws IOException
     {
         try
         {
+            // try to parse command line args
             if (args.length != 2)
             {
-                System.out.println("Usage: java -jar FolderSync.jar \"SOURCE\" \"DESTINATION\"");
-                System.exit(-1);
+                Logger.error("Usage: java -jar FolderSync.jar \"SOURCE\" \"DESTINATION\"");
+                throw new IllegalArgumentException();
             }
 
-            final String FROM = args[0];
-            final String TO = args[1];
+            // create File references based on the provided args
+            final String FROM_PATH = replaceUserHomeIfPresent(args[0]);
+            final File FROM_FILE = new File(FROM_PATH);
+            final String TO_PATH = replaceUserHomeIfPresent(args[1]);
+            final File TO_FILE = new File(TO_PATH);
 
             // get all files from SOURCE
             List<String> allPathsInSource = null;
-            if (Files.notExists(Paths.get(FROM)))
+            if (!FROM_FILE.exists())
             {
-                System.out.println("Source folder does not exist.");
-                System.exit(-1);
+                Logger.error("Source folder does not exist.");
+                throw new IOException();
             }
             else
             {
-                allPathsInSource = getFiles(FROM);
+                allPathsInSource = getFiles(FROM_PATH);
                 Collections.sort(allPathsInSource);
-                System.out.println(String.format("Found [%d] files in [%s]", allPathsInSource.size(), FROM));
             }
+            Logger.info("Found [{}] files in [{}]", allPathsInSource.size(), FROM_PATH);
 
             // get all files from DESTINATION
             List<String> allPathsInDestination = null;
-            if (Files.notExists(Paths.get(TO)))
+            if (!TO_FILE.exists())
             {
                 allPathsInDestination = Collections.emptyList();
-                Files.createDirectory(Paths.get(TO));
+                Files.createDirectory(Paths.get(TO_PATH));
             }
             else
             {
-                allPathsInDestination = getFiles(TO);
+                allPathsInDestination = getFiles(TO_PATH);
                 Collections.sort(allPathsInDestination);
-                System.out.println(String.format("Found [%d] files in [%s]", allPathsInDestination.size(), TO));
             }
+            Logger.info("Found [{}] files in [{}]", allPathsInDestination.size(), TO_PATH);
 
             // copy non-existent files in DESTINATION from SOURCE
             for (String pathInSource : allPathsInSource)
             {
-                String pathInDestination = pathInSource.replace(FROM, TO);
+                String pathInDestination = pathInSource.replace(FROM_PATH, TO_PATH);
 
                 if (!allPathsInDestination.stream().anyMatch(f -> f.equals(pathInDestination)))
                 {
-                    System.out.println(String.format("Copying [%s] to [%s]", pathInSource, pathInDestination));
+                    Logger.debug("Copying [{}] to [{}]", pathInSource, pathInDestination);
                     new File(pathInDestination).getParentFile().mkdirs();
                     Files.copy(Paths.get(pathInSource), Paths.get(pathInDestination));
                 }
@@ -66,15 +76,22 @@ public class Runner
         }
         catch (IOException e)
         {
-            System.err.println("Unexpected exception: " + e);
-            e.printStackTrace();
+            Logger.error("Unexpected exception: {}", e);
+            throw e;
         }
     }
 
+    private static String replaceUserHomeIfPresent(String path)
+    {
+        return path.contains("~") ? path.replace("~", System.getProperty("user.home")) : path;
+    }
+
+    // https://stackoverflow.com/questions/2056221/recursively-list-files-in-java
     private static List<String> getFiles(String path) throws IOException
     {
         return Files
-                .find(Paths.get(path), Integer.MAX_VALUE, (filePath, fileAttr) -> fileAttr.isRegularFile())
+                .walk(Paths.get(path))
+                .filter(Files::isRegularFile)
                 .map(filePath -> filePath.toAbsolutePath().toString())
                 .collect(Collectors.toList());
     }
