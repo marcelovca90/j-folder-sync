@@ -14,13 +14,21 @@ import xyz.marcelo.main.Runner;
 
 public class RunnerTest
 {
+    private static final String SLASH = File.separator;
+    private static final String FILE = "file";
+    private static final String FROM = "." + SLASH + "from" + SLASH;
+    private static final String TO = "." + SLASH + "to" + SLASH;
+    private static final String TO_1 = "." + SLASH + "to1" + SLASH;
+    private static final String TO_2 = "." + SLASH + "to2" + SLASH;
+    private static final String TO_N = "." + SLASH + "toN" + SLASH;
+
     private File sourceFile;
     private File[] destinationFiles;
 
     @Before
     public void setUp() throws IOException
     {
-        sourceFile = new File("./from/file");
+        sourceFile = new File(FROM + FILE);
         sourceFile.getParentFile().mkdirs();
         sourceFile.createNewFile();
     }
@@ -56,7 +64,7 @@ public class RunnerTest
     public void main_withInvalidArgs_shouldThrowException2() throws IOException
     {
         // given
-        String[] args = new String[] { "./from123/", "./to123/" };
+        String[] args = new String[] { FROM + "123", TO + "123" };
 
         // when
         Runner.main(args);
@@ -68,13 +76,13 @@ public class RunnerTest
     public void main_withValidArgs_shouldSynchronizeFiles() throws IOException
     {
         // given
-        String[] args = new String[] { "./from/", "./to1/", "./to2/", "./toN/" };
+        String[] args = new String[] { FROM, TO_1, TO_2, TO_N };
 
         // when
         Runner.main(args);
 
         // then
-        destinationFiles = new File[] { new File("./to1/file"), new File("./to2/file"), new File("./toN/file") };
+        destinationFiles = new File[] { new File(TO_1 + FILE), new File(TO_2 + FILE), new File(TO_N + FILE) };
         Arrays.stream(destinationFiles).forEach(file -> assertTrue(file.exists()));
     }
 
