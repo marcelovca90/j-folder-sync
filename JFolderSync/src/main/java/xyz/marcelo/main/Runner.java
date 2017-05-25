@@ -18,19 +18,20 @@ public class Runner
 
     public static void main(String[] args) throws IOException
     {
-        try
+        // try to parse command line args
+        if (args.length < 2)
         {
-            // try to parse command line args
-            if (args.length != 2)
-            {
-                Logger.error("Usage: java -jar FolderSync.jar \"SOURCE\" \"DESTINATION\"");
-                throw new IllegalArgumentException();
-            }
+            Logger.error("Usage: java -jar FolderSync.jar \"src\" \"[dest1]\" \"[dest2]\" \"[destN]\"");
+            throw new IllegalArgumentException();
+        }
 
+        // iterate over the destination folders
+        for (int i = 1; i < args.length; i++)
+        {
             // create File references based on the provided args
             final String FROM_PATH = replaceUserHomeIfPresent(args[0]);
             final File FROM_FILE = new File(FROM_PATH);
-            final String TO_PATH = replaceUserHomeIfPresent(args[1]);
+            final String TO_PATH = replaceUserHomeIfPresent(args[i]);
             final File TO_FILE = new File(TO_PATH);
 
             // get all files from SOURCE
@@ -73,11 +74,6 @@ public class Runner
                     Files.copy(Paths.get(pathInSource), Paths.get(pathInDestination));
                 }
             }
-        }
-        catch (IOException e)
-        {
-            Logger.error("Unexpected exception: {}", e);
-            throw e;
         }
     }
 
