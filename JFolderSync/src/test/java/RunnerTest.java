@@ -73,6 +73,19 @@ public class RunnerTest
     }
 
     @Test
+    public void main_withSameFolder_shouldSynchronizeFiles() throws IOException
+    {
+        // given
+        String[] args = new String[] { FROM, FROM };
+
+        // when
+        Runner.main(args);
+
+        // then
+        assertTrue(new File(FROM + FILE).exists());
+    }
+
+    @Test
     public void main_withValidArgs_shouldSynchronizeFiles() throws IOException
     {
         // given

@@ -25,47 +25,48 @@ public class Runner
             throw new IllegalArgumentException();
         }
 
+        final String filenameInSource = args[0];
+        final File fileInSource = new File(filenameInSource);
+
         // iterate over the destination folders
         for (int i = 1; i < args.length; i++)
         {
             // create File references based on the provided args
-            final String FROM_PATH = replaceUserHomeIfPresent(args[0]);
-            final File FROM_FILE = new File(FROM_PATH);
-            final String TO_PATH = replaceUserHomeIfPresent(args[i]);
-            final File TO_FILE = new File(TO_PATH);
+            final String filenameInDestination = args[i];
+            final File fileInDestination = new File(filenameInDestination);
 
-            // get all files from SOURCE
+            // retrieve all files in source folder
             List<String> allPathsInSource = null;
-            if (!FROM_FILE.exists())
+            if (!fileInSource.exists())
             {
                 Logger.error("Source folder does not exist.");
                 throw new IOException();
             }
             else
             {
-                allPathsInSource = getFiles(FROM_PATH);
+                allPathsInSource = getFiles(filenameInSource);
                 Collections.sort(allPathsInSource);
             }
-            Logger.info("Found [{}] files in [{}]", allPathsInSource.size(), FROM_PATH);
+            Logger.info("Found [{}] files in [{}]", allPathsInSource.size(), filenameInSource);
 
-            // get all files from DESTINATION
+            // retrieve all files in destination folder
             List<String> allPathsInDestination = null;
-            if (!TO_FILE.exists())
+            if (!fileInDestination.exists())
             {
                 allPathsInDestination = Collections.emptyList();
-                Files.createDirectory(Paths.get(TO_PATH));
+                Files.createDirectory(Paths.get(filenameInDestination));
             }
             else
             {
-                allPathsInDestination = getFiles(TO_PATH);
+                allPathsInDestination = getFiles(filenameInDestination);
                 Collections.sort(allPathsInDestination);
             }
-            Logger.info("Found [{}] files in [{}]", allPathsInDestination.size(), TO_PATH);
+            Logger.info("Found [{}] files in [{}]", allPathsInDestination.size(), filenameInDestination);
 
-            // copy non-existent files in DESTINATION from SOURCE
+            // copy non-existent files in destination folder from source folder
             for (String pathInSource : allPathsInSource)
             {
-                String pathInDestination = pathInSource.replace(FROM_PATH, TO_PATH);
+                String pathInDestination = pathInSource.replace(filenameInSource, filenameInDestination);
 
                 if (!allPathsInDestination.stream().anyMatch(f -> f.equals(pathInDestination)))
                 {
@@ -77,18 +78,13 @@ public class Runner
         }
     }
 
-    private static String replaceUserHomeIfPresent(String path)
-    {
-        return path.contains("~") ? path.replace("~", System.getProperty("user.home")) : path;
-    }
-
     // https://stackoverflow.com/questions/2056221/recursively-list-files-in-java
     private static List<String> getFiles(String path) throws IOException
     {
         return Files
-                .walk(Paths.get(path))
-                .filter(Files::isRegularFile)
-                .map(filePath -> filePath.toAbsolutePath().toString())
-                .collect(Collectors.toList());
+            .walk(Paths.get(path))
+            .filter(Files::isRegularFile)
+            .map(filePath -> filePath.toAbsolutePath().toString())
+            .collect(Collectors.toList());
     }
 }
