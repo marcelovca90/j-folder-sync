@@ -49,7 +49,7 @@ public class RunnerTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void main_withInvalidArgs_shouldThrowException() throws Exception
+    public void main_withEmptyArgs_shouldThrowException() throws Exception
     {
         // given
         String[] args = new String[0];
@@ -61,7 +61,7 @@ public class RunnerTest
     }
 
     @Test(expected = IOException.class)
-    public void main_withInvalidArgs_shouldThrowException2() throws IOException
+    public void main_withInvalidArgs_shouldThrowException() throws IOException
     {
         // given
         String[] args = new String[] { FROM + "123", TO + "123" };
@@ -73,7 +73,7 @@ public class RunnerTest
     }
 
     @Test
-    public void main_withSameFolder_shouldSynchronizeFiles() throws IOException
+    public void main_withValidEqualArgs_shouldSynchronizeFiles() throws IOException
     {
         // given
         String[] args = new String[] { FROM, FROM };
@@ -86,7 +86,7 @@ public class RunnerTest
     }
 
     @Test
-    public void main_withValidArgs_shouldSynchronizeFiles() throws IOException
+    public void main_withValidDifferentArgs_shouldSynchronizeFiles() throws IOException
     {
         // given
         String[] args = new String[] { FROM, TO_1, TO_2, TO_N };
