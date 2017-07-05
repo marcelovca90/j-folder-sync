@@ -1,4 +1,4 @@
-package xyz.marcelo.main;
+package io.github.marcelovca90.main;
 
 import java.io.File;
 import java.io.IOException;

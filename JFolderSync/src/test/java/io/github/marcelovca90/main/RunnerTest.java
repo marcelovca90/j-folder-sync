@@ -1,3 +1,4 @@
+package io.github.marcelovca90.main;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -10,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import xyz.marcelo.main.Runner;
+import io.github.marcelovca90.main.Runner;
 
 public class RunnerTest
 {
